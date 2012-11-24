@@ -20,7 +20,7 @@
    (if-let [file (normalise-path file (:root opts))]
      (.exists fs file
               #(if %
-                 (realise (.createReadStream fs file))
+                 (realise (stream/slurp file))
                  (realise-error nil)))
      (realise-error nil))))
 

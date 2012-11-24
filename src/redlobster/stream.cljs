@@ -4,6 +4,7 @@
         [cljs.yunoincore :only [clj->js]]))
 
 (n/require "stream" Stream)
+(n/require "fs" [createReadStream createWriteStream])
 
 (defprotocol IStream
   (readable? [this])
@@ -37,3 +38,9 @@
   (end [this data] (.end this data))
   (end [this data encoding] (.end this data encoding))
   (destroy-soon [this] (.destroySoon this)))
+
+(defn slurp [path]
+  (createReadStream path))
+
+(defn spit [path]
+  (createWriteStream path))

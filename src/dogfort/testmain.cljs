@@ -12,8 +12,8 @@
   (promise
    (defer 1000
      (realise {:status 200
-               :headers {:content-type "text/plain"}
-               :body "Hello sailor!"}))))
+               :headers {:content-type "text/html"}
+               :body "<h1>Hello sailor!</h1>"}))))
 
 (defn main [& args]
   (run-http (wrap-file handler ".") {:port 1337}))

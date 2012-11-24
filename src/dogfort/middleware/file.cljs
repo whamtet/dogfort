@@ -4,6 +4,7 @@
   (:require [redlobster.stream :as stream]
             [redlobster.promise :as p]
             [dogfort.util.codec :as codec]
+            [dogfort.util.mime-type :as mime]
             [cljs.node :as node]))
 
 (n/require "fs" fs)
@@ -35,12 +36,14 @@
                      :allow-symlinks? false}
                     opts)]
     (fn [req]
-      (if-not (= :get (:request-method req))
+      (if-not (or (= :get (:request-method req))
+                  (= :head (:request-method req)))
         (app req)
         (let [file (.slice (codec/url-decode (:uri req)) 1)
               file-stream (get-file-stream file opts)]
           (waitp file-stream
                  #(realise {:status 200
-                            :headers {}
+                            :headers {:content-type
+                                      (mime/ext-mime-type file)}
                             :body %})
                  #(realise (app req))))))))

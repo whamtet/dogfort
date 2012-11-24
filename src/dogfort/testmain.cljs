@@ -12,7 +12,7 @@
   (promise
    (defer 1000
      (realise {:status 200
-               :headers {"Content-Type" "text/plain"}
+               :headers {:content-type "text/plain"}
                :body "Hello sailor!"}))))
 
 (defn main [& args]

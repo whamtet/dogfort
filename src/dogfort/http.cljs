@@ -17,7 +17,7 @@
   (let [{:keys [status headers body]} ring-result]
     (set! (.-statusCode res) status)
     (doseq [[header value] headers]
-      (.setHeader res header (clj->js value)))
+      (.setHeader res (clj->js header) (clj->js value)))
     (-write-response body res)))
 
 (defn- send-error-page [res status err]

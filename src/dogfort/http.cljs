@@ -13,6 +13,18 @@
 (defprotocol IHTTPResponseWriter
   (-write-response [data res] "Write data to a http.ServerResponse"))
 
+(defn- send-result [res ring-result]
+  (let [{:keys [status headers body]} ring-result]
+    (set! (.-statusCode res) status)
+    (doseq [[header value] headers]
+      (.setHeader res header (clj->js value)))
+    (-write-response body res)))
+
+(defn- send-error-page [res status err]
+  (set! (.-statusCode res) status)
+  (.setHeader res "content-type" "text/html")
+  (-write-response (str "<h1>Error " status "</h1>") res))
+
 (extend-protocol IHTTPResponseWriter
   string
   (-write-response [data res]
@@ -36,20 +48,8 @@
 
   Stream
   (-write-response [data res]
-    (e/on data :data #(.write res %1))
-    (e/on data :end #(.end res))))
-
-(defn- send-result [res ring-result]
-  (let [{:keys [status headers body]} ring-result]
-    (set! (.-statusCode res) status)
-    (doseq [[header value] headers]
-      (.setHeader res header (clj->js value)))
-    (-write-response body res)))
-
-(defn- send-error-page [res status err]
-  (set! (.-statusCode res) status)
-  (.setHeader res "content-type" "text/html")
-  (-write-response (str "<h1>Error " status "</h1>") res))
+    (e/on data :error #(send-error-page res 500 %))
+    (.pipe data res)))
 
 (defn- build-listener [handler options]
   (fn [req res]

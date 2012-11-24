@@ -65,7 +65,7 @@
            :uri uri
            :query-string query
            :scheme "http"
-           :request-method (.-method req)
+           :request-method (keyword (.toLowerCase (.-method req)))
            :content-type (headers "content-type")
            :content-length (headers "content-length")
            :character-encoding nil
@@ -73,11 +73,9 @@
            :headers headers
            :body req}
           result (handler ring-req)]
-      (if (p/promise? result)
-        (p/on-realised result
-                       #(send-result res %)
-                       #(send-error-page res 500 %))
-        (send-result res result)))))
+      (p/on-realised result
+                     #(send-result res %)
+                     #(send-error-page res 500 %)))))
 
 (defn run-http [handler options]
   (let [server (.createServer http (build-listener handler options))]

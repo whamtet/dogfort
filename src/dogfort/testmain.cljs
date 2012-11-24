@@ -2,6 +2,7 @@
   (:use-macros [redlobster.macros :only [defer promise]])
   (:require-macros [cljs.node-macros :as n])
   (:use [dogfort.http :only [run-http]]
+        [dogfort.middleware.file :only [wrap-file]]
         [cljs.node :only [log]])
   (:require [cljs.nodejs]))
 
@@ -12,9 +13,9 @@
    (defer 1000
      (realise {:status 200
                :headers {"Content-Type" "text/plain"}
-               :body (.createReadStream fs "README.md")}))))
+               :body "Hello sailor!"}))))
 
 (defn main [& args]
-  (run-http handler {:port 1337}))
+  (run-http (wrap-file handler ".") {:port 1337}))
 
 (set! *main-cli-fn* main)

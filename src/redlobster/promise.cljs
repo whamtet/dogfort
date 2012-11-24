@@ -9,6 +9,9 @@
   (realise-error [this value])
   (on-realised [this on-success on-error]))
 
+(defn promise? [v]
+  (satisfies? IPromise v))
+
 (deftype Promise [ee]
   IDeref
   (-deref [this]
@@ -23,15 +26,23 @@
   (failed? [this]
     (and (realised? this) (= "error" (.-__realised ee))))
   (realise [this value]
-    (doto ee
-      (aset "__realised" "success")
-      (aset "__value" value)
-      (e/emit :success [value])))
-  (realise-error [this error]
-    (doto ee
-      (aset "__realised" "error")
-      (aset "__value" error)
-      (e/emit :error [error])))
+    (if (promise? value)
+      (on-realised value
+                   #(realise this %)
+                   #(realise-error this %))
+      (doto ee
+        (aset "__realised" "success")
+        (aset "__value" value)
+        (e/emit :success [value]))))
+  (realise-error [this value]
+    (if (promise? value)
+      (on-realised value
+                   #(realise this %)
+                   #(realise-error this %))
+      (doto ee
+        (aset "__realised" "error")
+        (aset "__value" value)
+        (e/emit :error [value]))))
   (on-realised [this on-success on-error]
     (if (realised? this)
       (if (failed? this) (on-error @this) (on-success @this))
@@ -47,6 +58,3 @@
         (aset "__value" nil))))
   ([on-success on-error]
      (on-realised (promise) on-success on-error)))
-
-(defn promise? [v]
-  (satisfies? IPromise v))

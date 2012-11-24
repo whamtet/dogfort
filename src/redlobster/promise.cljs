@@ -33,7 +33,7 @@
       (doto ee
         (aset "__realised" "success")
         (aset "__value" value)
-        (e/emit :success [value]))))
+        (e/emit :realise-success [value]))))
   (realise-error [this value]
     (if (promise? value)
       (on-realised value
@@ -42,13 +42,13 @@
       (doto ee
         (aset "__realised" "error")
         (aset "__value" value)
-        (e/emit :error [value]))))
+        (e/emit :realise-error [value]))))
   (on-realised [this on-success on-error]
     (if (realised? this)
       (if (failed? this) (on-error @this) (on-success @this))
       (doto ee
-        (e/on :success on-success)
-        (e/on :error on-error)))))
+        (e/on :realise-success on-success)
+        (e/on :realise-error on-error)))))
 
 (defn promise
   ([]
@@ -57,4 +57,5 @@
         (aset "__realised" nil)
         (aset "__value" nil))))
   ([on-success on-error]
-     (on-realised (promise) on-success on-error)))
+     (doto (promise)
+       (on-realised on-success on-error))))

@@ -5,10 +5,12 @@
             [redlobster.promise :as p]
             [dogfort.util.codec :as codec]
             [dogfort.util.mime-type :as mime]
+            [dogfort.util.time :as time]
             [cljs.node :as node]))
 
 (n/require "fs" fs)
 (n/require "path" path)
+(n/require "crypto" crypto)
 
 (defn- normalise-path [^string file ^string root]
   (let [file (.join path root file)]
@@ -16,19 +18,37 @@
              (= root (.slice file 0 (count root))))
       file nil)))
 
-(defn- get-file-stream [^string file opts]
+(defn- stat-file [^string file opts]
   (promise
    (if-let [file (normalise-path file (:root opts))]
-     (.exists fs file
-              #(if %
-                 (realise (stream/slurp file))
-                 (realise-error nil)))
+     (.stat fs file
+            (fn [err stats]
+              (if err (realise-error err)
+                  (do (aset stats "path" file)
+                      (realise stats)))))
      (realise-error nil))))
+
+(defn- etag [stats]
+  (-> (.createHash crypto "md5")
+      (.update (str (.-ino stats) "/" (.-mtime stats) "/" (.-size stats)))
+      (.digest "hex")))
+
+(defn- last-modified [stats]
+  (time/rfc822-date (.-mtime stats)))
 
 (defn- expand-dir [^string path]
   (try*
    (.realpathSync fs path)
    (catch e (throw (format "Directory does not exist: %s" path)))))
+
+(defn- file-response [stats]
+  (let [file (.-path stats)]
+    {:status 200
+     :headers {:content-type (mime/ext-mime-type file)
+               :content-length (.-size stats)
+               :last-modified (last-modified stats)
+               :etag (etag stats)}
+     :body (stream/slurp file)}))
 
 (defn wrap-file [app ^string root-path & [opts]]
   (let [opts (merge {:root (expand-dir root-path)
@@ -40,10 +60,7 @@
                   (= :head (:request-method req)))
         (app req)
         (let [file (.slice (codec/url-decode (:uri req)) 1)
-              file-stream (get-file-stream file opts)]
-          (waitp file-stream
-                 #(realise {:status 200
-                            :headers {:content-type
-                                      (mime/ext-mime-type file)}
-                            :body %})
+              stat-p (stat-file file opts)]
+          (waitp stat-p
+                 #(realise (file-response %))
                  #(realise (app req))))))))

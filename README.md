@@ -8,12 +8,52 @@ inspired by [Ring](https://github.com/mmcgrana/ring).
 This is *experimental code*. If you build anything on this right now,
 you're being stupid.
 
+## Usage
+
+Dog Fort uses Ring's concept of handlers and adapters, the only
+difference being that the handler should return a promise of a
+response structure, not the response itself, due to the asynchronous
+nature of Node. See below for documentation on promises.
+
+```clojure
+    (ns user
+      (:use [dogfort.http :only [run-http]])
+      (:use-macros [redlobster.macros :only [promise]]))
+
+    (defn handler [request]
+      (promise
+        (realise {:status 200
+                  :headers {:content-type "text/html"}
+                  :body "<h1>This is Dog Fort</h1>"})))
+
+    (run-http handler {:port 1337})
+```
+
+The body of a response can also be a Node stream. Here's an example
+that serves a file directly from the file system using a Node `Stream`
+object.
+
+```clojure
+    (ns user
+      (:use [dogfort.http :only [run-http]])
+      (:require [redlobster.stream :as stream])
+      (:use-macros [redlobster.macros :only [promise]]))
+
+    (defn handler [request]
+      (promise
+        (realise {:status 200
+                  :headers {:content-type "text/plain"}
+                  :body (stream/slurp "README.md")})))
+
+    (run-http handler {:port 1337})
+```
+
 # Red Lobster
 
-A toolkit for working asynchronously on Node in ClojureScript, which
-sits at the heart of Dog Fort. Wraps Node's `EventEmitter` and
-`Stream` types, and provides some useful abstractions; in particular,
-promises.
+Red Lobster is a toolkit for working asynchronously on Node in
+ClojureScript, and is the mechanism through which Dog Fort gets things
+done. It wraps Node's `EventEmitter` and `Stream` types, and provides
+some useful abstractions; in particular, promises.
 
 ## Promises
 
@@ -36,7 +76,12 @@ realisation.
     ;; prints "promise succeeded: cheezburger"
 ```
 
-There's also a macro that helps you write async code to realise a promise:
+There's also a `promise` macro that helps you write async code to
+realise a promise. The macro returns a new promise, and takes a set of
+forms that it executes immediately, and makes two functions `realise`
+and `realise-error` available inside the macro's scope for realising
+the promise. This lets you conveniently realise a promise through
+multiple levels of callbacks.
 
 ```clojure
     (ns user
@@ -55,8 +100,44 @@ There's also a macro that helps you write async code to realise a promise:
 
     (def file-promise (read-file "/etc/passwd"))
     (p/on-realised file-promise
-      #(print %)
+      #(print (str "File contents:\n" %))
       #(print "Error reading file!"))
+```
+
+A promise can also be linked to another promise, either through simply
+calling `realise` with a new promise as the realised value, which will
+automatically realise the promise with the new promise's value once
+that promise realises, or through the `waitp` macro, which takes a
+promise, a success handler and an error handler, and returns a new
+promise bound to the original promise, realised through the same
+`realise` function the `promise` macro makes available:
+
+```clojure
+    (ns user
+      (:require [redlobster.promise :as p])
+      (:use-macros [redlobster.macros :only [promise waitp]]))
+
+    (defn read-file-or-default [path]
+      (let [file-promise (read-file path)]
+        (waitp file-promise
+          #(realise %)
+          #(realise "default content"))))
+```
+
+Promises can also, obvoiusly, be dereferenced, but, unlike Clojure
+promises, this doesn't block until the promise has been realised.
+Notice that dereferencing doesn't distinguish between success or error
+states; you'll have to use the `failed?` function to determine whether
+the promise failed.
+
+```clojure
+    (def my-promise (p/promise))
+    @my-promise
+    ; => :redlobster.promise/not-realised
+
+    (p/realise my-promise "like a boss")
+    @my-promise
+    ; => "like a boss"
 ```
 
 # License

@@ -67,3 +67,35 @@
 (defn promise-fail [error-value]
   (doto (promise)
     (realise-error error-value)))
+
+(defn await
+  "Takes a list of promises, and creates a promise that will realise as
+`:redlobster.promise/realised` when each promise has successfully realised,
+or if one or more of the promises fail, fail with the value of the first
+failing promise."
+  [& promises]
+  (let [p (promise)
+        total (count promises)
+        count (atom 0)
+        done (atom false)]
+    (doseq [subp promises]
+      (on-realised
+       subp
+       (fn [_]
+         (when (not @done)
+           (swap! count inc)
+           (when (= total @count)
+             (reset! done true)
+             (realise p :redlobster.promise/realised))))
+       (fn [err]
+         (when (not @done)
+           (reset! done true)
+           (realise-error p err)))))
+    p))
+
+(defn defer-until-realised [promises callback]
+  (let [p (promise)]
+    (on-realised (apply await promises)
+                 (fn [_] (realise p (callback)))
+                 (fn [error] (realise-error p error)))
+    p))

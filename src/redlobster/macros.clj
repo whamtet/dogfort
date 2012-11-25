@@ -42,3 +42,50 @@ to realise the promise."
                                      ~success
                                      ~failure)
      promise#))
+
+(defmacro when-realised
+  "Given a sequence of promises, defer execution of the body until they have
+all been successfully realised. If one or more of the promises fail, do not
+execute anything. Return a promise that will realise with the result of
+evaluating the forms, or fail with the value of the first dependent promise
+to fail."
+  [promises & forms]
+  `(redlobster.promise/defer-until-realised
+     ~promises
+     (fn [] ~@forms)))
+
+(defmacro let-realised
+  "Like `when-realised`, except it takes a binding form of variable/promise
+pairs instead of just a list of variables, and binds these to the macro scope."
+  [bindings & forms]
+  `(let ~bindings
+     (redlobster.promise/defer-until-realised
+       ~(vec (map first (partition 2 bindings)))
+       (fn [] ~@forms))))
+
+(defmacro defer-node
+  "Appends a callback to a given form which takes two arguments `[error value]`
+and executes it, returning a promise that will fail with `error` if `error`
+is truthy, and realise with `value` if `error` is falsy. This is a common
+Node callback idiom, so this macro can be useful for wrapping Node calls in
+promises, eg.:
+
+    (defer-node (.readFile fs \"/etc/passwd\"))
+
+The above code will call fs.readFile() and return a promise that will realise
+with the file's contents when the operation is done, or fail with an appropriate
+error if the operation returns one.
+
+Optionally, you can specify a transformer function to apply to the success value
+before it's realised. `js->clj` is a likely candidate."
+  ([form transformer]
+     `(let [promise# (redlobster.promise/promise)
+            callback# (fn [error# value#]
+                        (if error#
+                          (redlobster.promise/realise-error promise# error#)
+                          (redlobster.promise/realise promise#
+                                                      (~transformer value#))))]
+        (~@form callback#)
+        promise#))
+  ([form]
+     `(defer-node ~form identity)))

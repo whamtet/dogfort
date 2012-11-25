@@ -4,7 +4,8 @@
   (:require [cljs.node :as node]
             [redlobster.events :as e]
             [redlobster.stream :as s]
-            [redlobster.promise :as p]))
+            [redlobster.promise :as p]
+            [dogfort.util.response :as response]))
 
 (n/require "http" http)
 (n/require "url" url)
@@ -18,38 +19,43 @@
     (set! (.-statusCode res) status)
     (doseq [[header value] headers]
       (.setHeader res (clj->js header) (clj->js value)))
-    (-write-response body res)))
+    (when (-write-response body res)
+      (.end res))))
 
 (defn- send-error-page [res status err]
-  (set! (.-statusCode res) status)
-  (.setHeader res "content-type" "text/html")
-  (-write-response (str "<h1>Error " status "</h1>") res))
+  (response/default-response 500))
 
 (extend-protocol IHTTPResponseWriter
   string
   (-write-response [data res]
     (.write res data)
-    (.end res))
+    true)
 
   PersistentVector
   (-write-response [data res]
-    (.write res (apply str data))
-    (.end res))
+    (doseq [i data] (-write-response i res))
+    true)
 
   List
   (-write-response [data res]
-    (.write res (apply str data))
-    (.end res))
+    (doseq [i data] (-write-response i res))
+    true)
+
+  LazySeq
+  (-write-response [data res]
+    (doseq [i data] (-write-response i res))
+    true)
 
   js/Buffer
   (-write-response [data res]
     (.write res data)
-    (.end res))
+    true)
 
   Stream
   (-write-response [data res]
     (e/on data :error #(send-error-page res 500 %))
-    (.pipe data res)))
+    (.pipe data res)
+    false))
 
 (defn- build-listener [handler options]
   (fn [req res]

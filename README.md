@@ -21,10 +21,9 @@ nature of Node. See below for documentation on promises.
       (:use-macros [redlobster.macros :only [promise]]))
 
     (defn handler [request]
-      (promise
-        (realise {:status 200
-                  :headers {:content-type "text/html"}
-                  :body "<h1>This is Dog Fort</h1>"})))
+      (promise {:status 200
+                :headers {:content-type "text/html"}
+                :body "<h1>This is Dog Fort</h1>"}))
 
     (run-http handler {:port 1337})
 ```
@@ -40,10 +39,9 @@ object.
       (:use-macros [redlobster.macros :only [promise]]))
 
     (defn handler [request]
-      (promise
-        (realise {:status 200
-                  :headers {:content-type "text/plain"}
-                  :body (stream/slurp "README.md")})))
+      (promise {:status 200
+                :headers {:content-type "text/plain"}
+                :body (stream/slurp "README.md")}))
 
     (run-http handler {:port 1337})
 ```

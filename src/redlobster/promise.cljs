@@ -56,6 +56,10 @@
       (doto (e/event-emitter)
         (aset "__realised" nil)
         (aset "__value" nil))))
-  ([on-success on-error]
+  ([success-value]
      (doto (promise)
-       (on-realised on-success on-error))))
+       (realise success-value))))
+
+(defn promise-fail [error-value]
+  (doto (promise)
+    (realise-error error-value)))

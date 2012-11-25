@@ -48,6 +48,43 @@ object.
     (run-http handler {:port 1337})
 ```
 
+## Routing
+
+Dog Fort includes a request routing mechanism heavily inspired by
+[Compojure](https://github.com/weavejester/compojure). It introduces
+the `defroutes` macro for building handlers with routing.
+
+```clojure
+    (ns user
+      (:use [dogfort.http :only [run-http]])
+      (:require [dogfort.middleware.routing])
+      (:use-macros [dogfort.middleware.routing-macros :only [defroutes GET]]))
+
+    (defroutes app
+      (GET "/hello/:name" [name]
+        ["<h1>Hello " name "!</h1>"]))
+
+    (run-http app {:port 1337})
+```
+
+The `defroutes` macro takes a symbol name, and a series of sub-handler
+definitions, which are created using the `GET` macro and its
+corresponding macros for other request methods: `POST`, `HEAD`, etc.
+
+This macro takes a path expression in the Rails style, a vector of
+variable bindings that should match the variables used in the path
+expression, and a series of forms constituting the handler's body, and
+should return a response as usual.
+
+Notice, however, that routing sub-handlers don't need to return a
+promise. For convenience, you can also return a response map directly,
+or dispense with the map altogether and just return the response body,
+either as a string, a sequence or a Node `Stream` object. The routing
+middleware will automatically wrap it as appropriate, defaulting to a
+`Content-Type` of `text/html` if you only provide the body. Note that
+if you need to perform asynchronous calls, you will still have to
+return a promise and realise it to a response map as usual.
+
 # Red Lobster
 
 Red Lobster is a toolkit for working asynchronously on Node in

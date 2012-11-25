@@ -26,23 +26,27 @@
   (failed? [this]
     (and (realised? this) (= "error" (.-__realised ee))))
   (realise [this value]
-    (if (promise? value)
-      (on-realised value
-                   #(realise this %)
-                   #(realise-error this %))
-      (doto ee
-        (aset "__realised" "success")
-        (aset "__value" value)
-        (e/emit :realise-success [value]))))
+    (if (realised? this)
+      (throw :redlobster.promise/already-realised)
+      (if (promise? value)
+        (on-realised value
+                     #(realise this %)
+                     #(realise-error this %))
+        (doto ee
+          (aset "__realised" "success")
+          (aset "__value" value)
+          (e/emit :realise-success [value])))))
   (realise-error [this value]
-    (if (promise? value)
-      (on-realised value
-                   #(realise this %)
-                   #(realise-error this %))
-      (doto ee
-        (aset "__realised" "error")
-        (aset "__value" value)
-        (e/emit :realise-error [value]))))
+    (if (realised? this)
+      (throw :redlobster.promise/already-realised)
+      (if (promise? value)
+        (on-realised value
+                     #(realise this %)
+                     #(realise-error this %))
+        (doto ee
+          (aset "__realised" "error")
+          (aset "__value" value)
+          (e/emit :realise-error [value])))))
   (on-realised [this on-success on-error]
     (if (realised? this)
       (if (failed? this) (on-error @this) (on-success @this))

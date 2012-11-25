@@ -92,16 +92,16 @@
    509 "http://24.media.tumblr.com/tumblr_lwjfwtx7P81qzhbl2o5_1280.jpg"
    599 "http://25.media.tumblr.com/tumblr_lwjfwtx7P81qzhbl2o6_1280.jpg"})
 
-(defn bare-response [status body]
+(defn response [status body & [content-type]]
   {:status status
-   :headers {:content-type "text/html"}
+   :headers (if content-type {:content-type content-type} {})
    :body body})
 
 (defn default-response [status]
-  (bare-response status
-                 (flatten
-                  ["<html><head>"
-                   "<style>"
+  (response status
+            (flatten
+             ["<html><head>"
+              "<style>"
                    "body { text-align: center; }"
                    "img { box-shadow: 0px 8px 32px black; }"
                    "</style>"
@@ -110,4 +110,15 @@
                       (if-let [cat (status-cats status)]
                        ["<h1><img src=\"" cat "\" alt=\"" label "\"></h1>"]
                        ["<h1>" label "</h1>"])
-                      "</body></html>"])])))
+                      "</body></html>"])])
+            "text/html"))
+
+(defn redirect [url]
+  {:status 302
+   :headers {:location url}
+   :body ""})
+
+(defn redirect-after-post [url]
+  {:status 303
+   :headers {:location url}
+   :body ""})

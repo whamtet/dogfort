@@ -111,6 +111,8 @@ realisation.
     ;; prints "promise succeeded: cheezburger"
 ```
 
+### The Short Form
+
 There's also a `promise` macro that helps you write async code to
 realise a promise. The macro returns a new promise, and takes a set of
 forms that it executes immediately, and makes two functions `realise`
@@ -139,25 +141,7 @@ multiple levels of callbacks.
       #(print "Error reading file!"))
 ```
 
-A promise can also be linked to another promise, either through simply
-calling `realise` with a new promise as the realised value, which will
-automatically realise the promise with the new promise's value once
-that promise realises, or through the `waitp` macro, which takes a
-promise, a success handler and an error handler, and returns a new
-promise bound to the original promise, realised through the same
-`realise` function the `promise` macro makes available:
-
-```clojure
-    (ns user
-      (:require [redlobster.promise :as p])
-      (:use-macros [redlobster.macros :only [promise waitp]]))
-
-    (defn read-file-or-default [path]
-      (let [file-promise (read-file path)]
-        (waitp file-promise
-          #(realise %)
-          #(realise "default content"))))
-```
+### Dereferencing Promises
 
 Promises can also, obvoiusly, be dereferenced, but, unlike Clojure
 promises, this doesn't block until the promise has been realised.
@@ -173,6 +157,148 @@ the promise failed.
     (p/realise my-promise "like a boss")
     @my-promise
     ; => "like a boss"
+```
+
+### Chaining Promises
+
+A promise can also be chained to another promise, either through
+simply calling `realise` with a new promise as the realised value,
+which will automatically realise the promise with the new promise's
+value once that promise realises, or through the `waitp` macro, which
+takes a promise, a success handler and an error handler, and returns a
+new promise bound to the original promise, realised through the same
+`realise` function the `promise` macro makes available:
+
+```clojure
+    (ns user
+      (:require [redlobster.promise :as p])
+      (:use-macros [redlobster.macros :only [promise waitp]]))
+
+    (defn read-file-or-default [path]
+      (let [file-promise (read-file path)]
+        (waitp file-promise
+          #(realise %)
+          #(realise "default content"))))
+```
+
+### Waiting For Promises
+
+There's a `when-realised` macro which lets you create a promise that
+waits for a list of other promises to finish before evaluating its
+body and realising the new promise with the result of the evaluation.
+This is useful when waiting for a number of async operations to
+finish.
+
+```clojure
+    (ns user
+      (:require [redlobster.promise :as p])
+      (:use-macros [redlobster.macros :only [when-realised]]))
+
+    (let [file-promise (read-file "/etc/passwd")]
+      (when-realised [file-promise]
+        (.write (.-stdout js/process) @file-promise)))
+    ; writes the contents of /etc/passwd to stdout.
+    ; returns a promise that will realise when the code has executed.
+```
+
+The `let` + `when-realised` construction above is a common pattern, so
+there's a `let-realised` macro for combining the two. The example
+above would have been better written like this:
+
+```clojure
+    (ns user
+      (:require [redlobster.promise :as p])
+      (:use-macros [redlobster.macros :only [let-realised]]))
+
+    (let-realised
+        [file-promise (read-file "/etc/passwd")]
+      (.write (.-stdout js/process) @file-promise))
+```
+
+### Waiting And Chaining
+
+Because `when-realised` and `let-realised` return promises that are
+realised to the result of evaluating their bodies, and because you can
+chain promises together by realising a promise with another promise,
+you can easily create multi-step promises like this:
+
+```clojure
+    (ns user
+      (:require [redlobster.promise :as p])
+      (:use-macros [redlobster.macros :only [let-realised]]))
+
+    (let-realised
+        [filename-promise (read-file "/tmp/filename-inside.txt")]
+      (let-realised
+          [file-promise (read-file @filename-promise)]
+        (.write (.-stdout js/process) @file-promise)))
+    ; reads a filename from /tmp/filename-inside.txt, and then
+    ; reads the contents of that file, printing the result to stdout.
+```
+
+### Wrapping Node Callbacks
+
+A very common idiom in Node is the error/result callback. A function
+takes a callback as its last argument, which in turn takes two
+arguments: an error argument, which will be null upon success, and a
+result argument. Callbacks start with handling any non-null error, and
+proceed with dealing with the result if there was no error.
+
+```javascript
+    fs.readFile("/etc/passwd", function(error, result) {
+      if (error) throw error;
+      console.log(result);
+    });
+```
+
+When we're using promises instead of callbacks, it's generally useful
+to wrap constructs like these in a promise. That's easily accomplished
+by using the `defer-node` macro. For instance, it lets us rewrite the
+`read-file` function from the previous examples very succinctly:
+
+```clojure
+    (ns user
+      (:require [redlobster.promise :as p])
+      (:use-macros [redlobster.macros :only [let-realised defer-node]]))
+
+    (def fs (js/require "fs"))
+
+    (defn read-file [path]
+      (defer-node (.readFile fs path)))
+```
+
+You can pass a function as a second argument to `defer-node`, which
+will be applied to the result of the operation prior to realising the
+promise. An excellent candidate for this would be `js->clj`, but for
+the sake of example, let's make the `read-file` function more shouty.
+
+```clojure
+    (ns user
+      (:require [redlobster.promise :as p]
+                [clojure.string :as str])
+      (:use-macros [redlobster.macros :only [let-realised defer-node]]))
+
+    (def fs (js/require "fs"))
+
+    (defn read-file [path]
+      (defer-node (.readFile fs path) str/upper-case))
+```
+
+At this point you're probably thinking, "wait, what if I use that
+function to transform the result into another promise?" Of course,
+that's an excellent way of chaining together Node API operations;
+let's rewrite the chaining example above using this technique.
+
+```clojure
+    (ns user
+      (:require [redlobster.promise :as p])
+      (:use-macros [redlobster.macros :only [defer-node]]))
+
+    (def fs (js/require "fs"))
+
+    (defer-node (.readFile fs "/tmp/filename-inside.txt)
+      (fn [result] (defer-node (.readFile fs result)
+        (fn [result] (.write (.-stdout js/process) result)))))
 ```
 
 # License

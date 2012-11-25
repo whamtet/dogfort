@@ -4,6 +4,7 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.4.0"]
+                 [org.bodil/redlobster "0.1.0"]
                  [hiccups "0.1.1"]]
   :plugins [[lein-cljsbuild "0.2.9"]
             [org.bodil/lein-noderepl "0.1.1"]]

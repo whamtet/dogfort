@@ -10,9 +10,9 @@
         [cljs.node :only [log]])
   (:require [cljs.nodejs]
             [redlobster.promise :as p]
+            [redlobster.mongo :as mongo]
             [dogfort.middleware.routes]
             [dogfort.util.response :as response]
-            [mongo.core :as mongo]
             [hiccups.runtime]))
 
 (n/require "fs" fs)

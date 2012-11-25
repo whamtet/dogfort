@@ -51,7 +51,7 @@
   "Returns the url-decoded version of the given string, using either a specified
   encoding or UTF-8 by default. If the encoding is invalid, nil is returned."
   [encoded & [encoding]]
-  (percent-decode encoded encoding))
+  (percent-decode (str/replace encoded #"[+]" " ") encoding))
 
 (defn base64-encode
   "Encode a Buffer into a base64 encoded string."
@@ -103,7 +103,7 @@
   or UTF-8 by default. If the encoded value is a string, a string is returned.
   If the encoded value is a map of parameters, a map is returned."
   [^String encoded & [encoding]]
-  (if-not (.contains encoded "=")
+  (if (< (.indexOf encoded "=") 0)
     (form-decode-str encoded encoding)
     (reduce
      (fn [m param]

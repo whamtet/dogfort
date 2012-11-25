@@ -1,7 +1,10 @@
 (ns redlobster.stream
   (:require-macros [cljs.node-macros :as n])
+  (:require [redlobster.promise :as p]
+            [redlobster.events :as e])
   (:use [cljs.node :only [log]]
-        [cljs.yunoincore :only [clj->js]]))
+        [cljs.yunoincore :only [clj->js]])
+  (:use-macros [redlobster.macros :only [promise]]))
 
 (n/require "stream" Stream)
 (n/require "fs" [createReadStream createWriteStream])
@@ -44,3 +47,19 @@
 
 (defn spit [path]
   (createWriteStream path))
+
+(defn- append-data [current data encoding]
+  (let [data (if (instance? js/Buffer data)
+               (.toString data encoding)
+               data)]
+    (str current data)))
+
+(defn read-stream [stream & [encoding]]
+  (promise
+   (let [content (atom "")
+         encoding (or encoding "utf8")]
+     (e/on stream :error #(realise-error %))
+     (e/on stream :data
+           (fn [data]
+             (swap! content append-data data encoding)))
+     (e/on stream :end #(realise @content)))))

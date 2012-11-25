@@ -9,4 +9,5 @@ pom.xml
 .lein-deps-sum
 .lein-failures
 .lein-plugins
-.repl
+/.repl
+/node_modules

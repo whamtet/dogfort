@@ -1,0 +1,103 @@
+@font-face {
+  font-family: 'Permanent Marker';
+  font-style: normal;
+  font-weight: normal;
+  src: local('Permanent Marker'), local('PermanentMarker'), url('permanentmarker.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Gloria Hallelujah';
+  font-style: normal;
+  font-weight: normal;
+  src: local('Gloria Hallelujah'), local('GloriaHallelujah'), url('gloriahallelujah.ttf') format('truetype');
+}
+
+html {
+    margin: 0;
+}
+
+body {
+    margin: 0;
+    background: url(exclusive_paper.png);
+    font-family: 'Gloria Hallelujah', cursive, sans-serif;
+    font-size: 1.4em;
+}
+
+h1 {
+    margin: 1em 0;
+    padding: 0.3em 0;
+    text-align: center;
+    background: rgba(128, 128, 128, 0.2);
+    color: black;
+    font-family: 'Permanent Marker', cursive, sans-serif;
+    font-size: 1.8em;
+    text-shadow: rgba(0, 0, 0, 0.2) 0 2px 5px;
+    box-shadow: 0 0 16px rgba(128, 128, 128, 0.4);
+}
+
+ul {
+    margin: 0;
+    padding: 0 2em;
+}
+
+li {
+    list-style: none;
+    margin: 0.2em;
+}
+
+li form {
+    display: inline;
+    margin: 0 0.2em 0 0;
+}
+
+li span {
+    margin: 0;
+    padding: 0 0.2em;
+}
+
+li form input {
+    border: none;
+    background: none;
+}
+
+li input.check, span.check {
+    color: green;
+}
+
+span.delete, span.check, li form input {
+    cursor: pointer;
+    font-size: 1.1em;
+}
+
+li.done span.todo {
+    text-decoration: line-through;
+}
+
+body > form {
+    margin: 0 2em 0 3.8em;
+}
+
+body > form:before {
+    font-size: 1.6em;
+    content: "✍ ";
+}
+
+body > form input {
+    font-family: 'Gloria Hallelujah', cursive, sans-serif;
+    font-size: 1em;
+    width: 75%;
+    border-top: 1px solid rgba(128, 128, 128, 0.4);
+    border-left: 1px solid rgba(128, 128, 128, 0.4);
+    border-right: 1px solid rgba(255, 255, 255, 0.4);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+body > form input, li {
+    background: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 0 16px rgba(128, 128, 128, 0.2);
+}
+
+li:hover {
+    background: rgba(255, 255, 255, 0.7);
+}
+

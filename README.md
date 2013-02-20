@@ -19,12 +19,12 @@ for documentation on promises.
 ```clojure
     (ns user
       (:use [dogfort.http :only [run-http]])
-      (:use-macros [redlobster.macros :only [promise]]))
+      (:require [redlobster.promise :as p])
 
     (defn handler [request]
-      (promise {:status 200
-                :headers {:content-type "text/html"}
-                :body "<h1>This is Dog Fort</h1>"}))
+      (p/promise {:status 200
+                  :headers {:content-type "text/html"}
+                  :body "<h1>This is Dog Fort</h1>"}))
 
     (run-http handler {:port 1337})
 ```
@@ -36,11 +36,12 @@ object.
 ```clojure
     (ns user
       (:use [dogfort.http :only [run-http]])
-      (:require [redlobster.stream :as stream])
-      (:use-macros [redlobster.macros :only [promise]]))
+      (:require [redlobster.stream :as stream]
+                [redlobster.promise :as p])
+
 
     (defn handler [request]
-      (promise {:status 200
+      (p/promise {:status 200
                 :headers {:content-type "text/plain"}
                 :body (stream/slurp "README.md")}))
 

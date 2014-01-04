@@ -2,8 +2,7 @@
 
 (ns dogfort.util.codec
   "Encoding and decoding utilities."
-  (:use [dogfort.util.data :only [assoc-conj]]
-        [cljs.yunoincore :only [clj->js]])
+  (:use [dogfort.util.data :only [assoc-conj]])
   (:require [clojure.string :as str]))
 
 (defn- double-escape [^String x]

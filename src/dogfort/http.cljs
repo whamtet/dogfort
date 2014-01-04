@@ -1,5 +1,4 @@
 (ns dogfort.http
-  (:use [cljs.yunoincore :only [clj->js]])
   (:require-macros [cljs.node-macros :as n])
   (:require [cljs.node :as node]
             [redlobster.events :as e]

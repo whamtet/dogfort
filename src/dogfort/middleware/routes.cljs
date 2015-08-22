@@ -38,7 +38,7 @@ route bindings."
                      (p/promise (response/default-response 404)))]
     (cond (p/promise? response) response
           (map? response) (p/promise response)
-          :else (p/promise (response/bare-response 200 response)))))
+          :else (p/promise (response/response 200 response)))))
 
 (defn routes [& handlers]
   #(apply routing % handlers))

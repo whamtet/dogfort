@@ -58,7 +58,10 @@
 
 (defn- build-listener [handler options]
   (fn [req res]
-    (let [{uri "pathname" query "search"} (js->clj (.parse url (.-url req)))
+    (let [
+          url (.parse url (.-url req))
+          uri (.-pathname url)
+          query (.-search url)
           headers (js->clj (.-headers req))
           conn (.-connection req)
           address (js->clj (.address conn))

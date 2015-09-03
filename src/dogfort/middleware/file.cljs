@@ -37,9 +37,9 @@
   (time/rfc822-date (.-mtime stats)))
 
 (defn- expand-dir [^string path]
-  (try*
+  (try
    (.realpathSync fs path)
-   (catch e (throw (format "Directory does not exist: %s" path)))))
+   (catch :default e (throw (format "Directory does not exist: %s" path)))))
 
 (defn- file-response [stats]
   (let [file (.-path stats)]

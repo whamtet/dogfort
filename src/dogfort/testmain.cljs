@@ -15,9 +15,11 @@
             [dogfort.util.response :as response]
             [hiccups.runtime]))
 
+(cljs.nodejs/enable-util-print!)
+
 (n/require "fs" fs)
 
-(def coll
+#_(def coll
   (let-realised
    [db (mongo/connect "localhost" 27017 "dogfort")]
    (mongo/collection @db "items")))
@@ -43,24 +45,25 @@
 
 (defroutes handler
   (GET "/" []
-       (when-realised
+       "hi"
+       #_(when-realised
         [coll]
         (let-realised
          [docs (mongo/find-all @coll {})]
          (response/response 200 (page-template @docs)))))
-  (POST "/new" [new]
+  #_(POST "/new" [new]
         (when-realised
          [coll]
          (let-realised
           [docs (mongo/save! @coll {"name" new "done" false})]
           (response/redirect-after-post "/"))))
-  (POST "/delete/:id" [id]
+  #_(POST "/delete/:id" [id]
         (when-realised
          [coll]
          (let-realised
           [docs (mongo/delete-id! @coll id)]
           (response/redirect-after-post "/"))))
-  (POST "/check/:id" [id]
+  #_(POST "/check/:id" [id]
         (when-realised
          [coll]
          (let-realised
@@ -68,6 +71,6 @@
           (response/redirect-after-post "/")))))
 
 (defn main [& args]
-  (run-http (wrap-body-parser (wrap-file handler "test-static")) {:port 1337}))
+  (run-http (wrap-body-parser (wrap-file handler "test-static")) {:port 5000}))
 
 (set! *main-cli-fn* main)

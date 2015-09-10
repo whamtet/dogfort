@@ -9,6 +9,7 @@
 (n/require "http" http)
 (n/require "url" url)
 (n/require "stream" Stream)
+(n/require "ws" ws)
 
 (defprotocol IHTTPResponseWriter
   (-write-response [data res] "Write data to a http.ServerResponse"))
@@ -85,6 +86,28 @@
                      #(send-result res %)
                      #(send-error-page res 500 %)))))
 
+(defn ws-handler [handler websocket]
+  (let [
+        upgrade-req (.-upgradeReq websocket)
+        url (.parse url (.-url upgrade-req))
+        uri (.-pathname url)
+        query (.-search url)
+        headers (js->clj (.-headers upgrade-req))
+        conn (.-connection upgrade-req)
+        address (js->clj (.address conn))
+        ]
+    (handler {:server-port (address "port")
+              :server-name (address "address")
+              :uri uri
+              :query-string query
+              :headers headers
+              :websocket websocket
+              :websocket? true
+              })))
+
 (defn run-http [handler options]
-  (let [server (.createServer http (build-listener handler options))]
+  (let [server (.createServer http (build-listener handler options))
+        wss (ws.Server. (clj->js {:server server}))
+        ]
+    (.on wss "connection" #(ws-handler handler %))
     (.listen server (:port options))))

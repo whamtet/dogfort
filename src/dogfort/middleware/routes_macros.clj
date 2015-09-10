@@ -87,18 +87,5 @@
 (defmacro ANY [route bindings & forms]
   (compile-route nil route bindings forms))
 
-#_(defn- add-wildcard [path]
-  (str path (if (.endsWith path "/") "*" "/*")))
-
-#_(defmacro resources
-  "A route for serving resources on the classpath. Accepts the following
-  keys:
-    :root       - the root prefix path of the resources, defaults to 'public'
-    :mime-types - an optional map of file extensions to mime types"
-  [path & [options]]
-  (GET (add-wildcard path) {uri :uri}
-    (let [root (:root options "public")]
-      uri)))
-
 (defmacro defroutes [name & routes]
   `(def ~name (dogfort.middleware.routes/routes ~@routes)))

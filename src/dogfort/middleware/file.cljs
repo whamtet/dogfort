@@ -39,7 +39,7 @@
 (defn- expand-dir [^string path]
   (try
    (.realpathSync fs path)
-   (catch :default e (throw (format "Directory does not exist: %s" path)))))
+   (catch :default e (throw (str "Directory does not exist: " path)))))
 
 (defn- file-response [stats]
   (let [file (.-path stats)]

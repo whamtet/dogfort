@@ -42,7 +42,6 @@
 (defn- parse-cookie-header
   "Turn a HTTP Cookie header into a list of name/value pairs."
   [header]
-  (println header (re-seq re-cookie header))
   (for [[_ name value] (re-seq re-cookie header)]
     [name value]))
 
@@ -76,7 +75,7 @@
   "Is the attribute valid?"
   [[key value]]
   (and (contains? set-cookie-attrs key)
-       (not (.contains (str value) ";"))
+       (= -1 (.indexOf (str value) ";"))
        (case key
          :max-age (or #_(instance? Interval value) (integer? value))
          :expires (or (instance? js/Date value) (string? value))

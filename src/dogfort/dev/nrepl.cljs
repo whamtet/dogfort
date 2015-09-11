@@ -13,7 +13,7 @@
 ;; });
 
 (def nrepl (js/require "nrepl-client"))
-(def conn (.connect nrepl (clj->js {:port 50000})))
+;(def conn (.connect nrepl (clj->js {:port 50000})))
 
 (defn my-eval [form]
   (promise

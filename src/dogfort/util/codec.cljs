@@ -3,7 +3,11 @@
 (ns dogfort.util.codec
   "Encoding and decoding utilities."
   (:use [dogfort.util.data :only [assoc-conj]])
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [cljs.nodejs]
+            ))
+
+(cljs.nodejs/enable-util-print!)
 
 (defn- double-escape [^String x]
   (.replace (.replace x "\\" "\\\\") "$" "\\$"))
@@ -35,16 +39,17 @@
                (fn [chars]
                  (-> (parse-bytes chars)
                      (.toString (or encoding "utf8"))
-                     (double-escape)))))
+                     (.replace "\\" "\\\\")
+                     #_(double-escape)))))
 
 (defn url-encode
   "Returns the url-encoded version of the given string, using either a specified
   encoding or UTF-8 by default."
   [unencoded & [encoding]]
   (str/replace
-    unencoded
-    #"[^A-Za-z0-9_~.+-]+"
-    #(double-escape (percent-encode % encoding))))
+   unencoded
+   #"[^A-Za-z0-9_~.+-]+"
+   #(double-escape (percent-encode % encoding))))
 
 (defn ^String url-decode
   "Returns the url-decoded version of the given string, using either a specified
@@ -62,15 +67,30 @@
   [^string encoded]
   (js/Buffer. encoded "base64"))
 
-(defprotocol FormEncodeable
-  (form-encode* [x encoding]))
+#_(defprotocol FormEncodeable
+    (form-encode* [x encoding]))
 
-(extend-protocol FormEncodeable
-  string
-  (form-encode* [unencoded encoding]
-    (url-encode unencoded encoding))
-  PersistentHashMap
-  (form-encode* [params encoding]
+#_(extend-protocol FormEncodeable
+    string
+    (form-encode* [unencoded encoding]
+                  (url-encode unencoded encoding))
+    PersistentHashMap
+    (form-encode* [params encoding]
+                  (letfn [(encode [x] (form-encode* x encoding))
+                          (encode-param [[k v]] (str (encode (name k)) "=" (encode v)))]
+                    (->> params
+                         (mapcat
+                          (fn [[k v]]
+                            (if (or (seq? v) (sequential? v) )
+                              (map #(encode-param [k %]) v)
+                              [(encode-param [k v])])))
+                         (str/join "&"))))
+    default
+    (form-encode* [x encoding]
+                  (form-encode* (str x) encoding)))
+
+(defn form-encode* [params encoding]
+  (if (map? params)
     (letfn [(encode [x] (form-encode* x encoding))
             (encode-param [[k v]] (str (encode (name k)) "=" (encode v)))]
       (->> params
@@ -79,17 +99,18 @@
               (if (or (seq? v) (sequential? v) )
                 (map #(encode-param [k %]) v)
                 [(encode-param [k v])])))
-           (str/join "&"))))
-  default
-  (form-encode* [x encoding]
-    (form-encode* (str x) encoding)))
+           (str/join "&")))
+    (url-encode (str params) encoding)))
 
 (defn form-encode
   "Encode the supplied value into www-form-urlencoded format, often used in
   URL query strings and POST request bodies, using the specified encoding.
   If the encoding is not specified, it defaults to UTF-8"
   [x & [encoding]]
-  (form-encode* x (or encoding "utf8")))
+  (->
+   (form-encode* x (or encoding "utf8"))
+   (str/replace #"\+" "%2B")
+   (str/replace #"%20" "+")))
 
 (defn form-decode-str
   "Decode the supplied www-form-urlencoded string using the specified encoding,

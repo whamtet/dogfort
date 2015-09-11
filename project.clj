@@ -14,7 +14,7 @@
             [lein-npm "0.6.1"]
             [com.cemerick/clojurescript.test "0.3.3"]
             ]
-  :npm {:dependencies [;[moment "2.10.6"]
+  :npm {:dependencies [
                        [nrepl-client "0.2.3"]
                        ]}
 

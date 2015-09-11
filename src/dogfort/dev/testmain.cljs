@@ -17,7 +17,7 @@
             [dogfort.middleware.routes]
             [dogfort.util.response :as response]
             [dogfort.dev.nrepl :as nrepl]
-            [dogfort.dev.test]
+            [dogfort.dev.test :as test]
             [hiccups.runtime]))
 
 (cljs.nodejs/enable-util-print!)
@@ -50,9 +50,11 @@
 (defn main [& args]
   (println "starting")
   (-> handler
-      cookies/wrap-cookies2
+      cookies/wrap-cookies
       (wrap-file "test-static")
       wrap-body-parser
       (run-http {:port 5000})))
+
+(test/run)
 
 (set! *main-cli-fn* main)

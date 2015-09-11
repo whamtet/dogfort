@@ -16,6 +16,8 @@
             ]
   :npm {:dependencies [
                        [nrepl-client "0.2.3"]
+                       [mongodb "2.0.42"]
+                       [ws "0.8.0"]
                        ]}
 
   ;using dogfort.build instead

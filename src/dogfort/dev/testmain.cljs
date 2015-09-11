@@ -45,7 +45,7 @@
   (GET "/" req
        {:status 200
         :body (pr-str req)
-        :cookies {:hi {:value "there"}}}))
+        :cookies {:hi {:value "therez"}}}))
 
 (defn main [& args]
   (println "starting")

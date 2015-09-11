@@ -10,6 +10,9 @@
    [redlobster.macros :only [promise waitp let-realised]]
    ))
 
+(defn print-through [s]
+  (prn s) s)
+
 (def ^{:doc "HTTP token: 1*<any CHAR except CTLs or tspecials>. See RFC2068"
        :added "1.3"}
   re-token
@@ -21,11 +24,11 @@
 
 (def ^{:private true, :doc "RFC6265 cookie-value"}
   re-cookie-value
-  (re-pattern (str "\"" re-cookie-octet "*\"|" re-cookie-octet "*")))
+  (re-pattern (str "\"" (.-source re-cookie-octet) "*\"|" (.-source re-cookie-octet) "*")))
 
 (def ^{:private true, :doc "RFC6265 set-cookie-string"}
   re-cookie
-  (re-pattern (str "\\s*(" re-token ")=(" re-cookie-value ")\\s*[;,]?")))
+  (re-pattern (str "\\s*(" (.-source re-token) ")=(" (.-source re-cookie-value) ")\\s*[;,]?")))
 
 (def ^{:private true
        :doc "Attributes defined by RFC6265 that apply to the Set-Cookie header."}
@@ -39,6 +42,7 @@
 (defn- parse-cookie-header
   "Turn a HTTP Cookie header into a list of name/value pairs."
   [header]
+  (println header (re-seq re-cookie header))
   (for [[_ name value] (re-seq re-cookie header)]
     [name value]))
 
@@ -118,9 +122,6 @@
   (if (request :cookies)
     request
     (assoc request :cookies (parse-cookies request decoder))))
-
-(defn print-through [s]
-  (prn s) s)
 
 (defn cookies-response
   "For responses with :cookies, adds Set-Cookie header and returns response

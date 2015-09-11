@@ -17,11 +17,11 @@
 
 (defn- session-options
   [options]
-  {:store        (options :store (mem/memory-store))
-   :cookie-name  (options :cookie-name "ring-session")
+  {:store        (:store options (mem/memory-store))
+   :cookie-name  (:cookie-name options "ring-session")
    :cookie-attrs (merge {:path "/"
                          :http-only true}
-                        (options :cookie-attrs)
+                        (:cookie-attrs options)
                         (if-let [root (options :root)]
                           {:path root}))})
 

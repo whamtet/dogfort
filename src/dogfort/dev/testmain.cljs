@@ -11,9 +11,7 @@
 
         )
   (:require [cljs.nodejs]
-            [dogfort.middleware.session :as session]
-            [dogfort.middleware.cookies :as cookies]
-            [dogfort.middleware.session.cookie :as cookie]
+            [dogfort.middleware.defaults :as defaults]
             [redlobster.promise :as p]
             [redlobster.mongo :as mongo]
             [dogfort.middleware.routes]
@@ -52,9 +50,7 @@
 (defn main [& args]
   (println "starting")
   (-> handler
-      (session/wrap-session #_{:store (cookie/cookie-store )})
-      (wrap-file "test-static")
-      wrap-body-parser
+      (defaults/wrap-defaults {:wrap-file "test-static"})
       (run-http {:port 5000})))
 
 (test/run)

@@ -62,7 +62,7 @@
     (let [
           url (.parse url (.-url req))
           uri (.-pathname url)
-          query (.-search url)
+          query (.substring (.-search url) 1)
           headers (js->clj (.-headers req))
           conn (.-connection req)
           address (js->clj (.address conn))

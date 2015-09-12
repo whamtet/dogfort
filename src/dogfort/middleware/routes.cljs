@@ -29,7 +29,7 @@ route bindings."
   (assoc request :params (merge (:params request {}) params)))
 
 (defn eval-route [request method matcher handler]
-  (when (= (:request-method request) method)
+  (when (or (not method) (= (:request-method request) method))
     (when-let [matches (route-match (:uri request) matcher)]
       (handler (merge-params request matches)))))
 

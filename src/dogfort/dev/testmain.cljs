@@ -1,7 +1,7 @@
 (ns dogfort.dev.testmain
   (:use-macros [redlobster.macros :only [promise defer-node waitp
                                          when-realised let-realised]]
-               [dogfort.middleware.routes-macros :only [defroutes GET POST]])
+               [dogfort.middleware.routes-macros :only [defroutes GET POST ANY]])
   (:require-macros [cljs.node-macros :as n]
                    [hiccups.core :as hiccups])
   (:use [dogfort.http :only [run-http]]
@@ -42,10 +42,11 @@
       [:input {:type "text" :name "new"}]]]]))
 
 (defroutes handler
-  (GET "/" req
+  (ANY "/" req
        {:status 200
         :body (pr-str req)
-        :session {:hi {:value "therez"}}}))
+        :session {:hi {:value "therez"}}})
+  )
 
 (defn main [& args]
   (println "starting")

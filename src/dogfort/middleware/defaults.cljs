@@ -9,7 +9,7 @@
    [dogfort.middleware.defaults-macros :refer [wrap]]))
 
 (defn wrap-defaults [handler options]
-  (wrap (file/wrap-file handler "test-static")
+  (wrap (file/wrap-file handler "static")
         keyword-params/wrap-keyword-params
         params/wrap-params
         ;session/wrap-session

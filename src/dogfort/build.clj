@@ -2,9 +2,9 @@
 
 (require 'cljs.build.api)
 
-(defn -main [& args]
+(defn -main [& [main]]
   (cljs.build.api/watch
    "src"
-   {:main 'dogfort.dev.testmain
+   {:main (symbol main)
     :output-to "main.js"
     :target :nodejs}))

@@ -33,5 +33,5 @@
                                             ;"test/cemerick/cljs/test/extra_test_command_file.js"
                                             ]}}
   :aliases
-  {"dev" ["run" "-m" "dogfort.build"]}
+  {"build" ["run" "-m" "dogfort.build" "dogfort.dev.testmain"]}
   )

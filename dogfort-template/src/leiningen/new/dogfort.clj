@@ -5,9 +5,12 @@
 (def render (renderer "dogfort"))
 
 (defn dogfort [name]
+  (println "creating new dogfort project" name)
   (let [data {:name name
               :sanitized (name-to-path name)}]
     (->files data
+             ["package.json" (render "package.json" data)]
+             ["Procfile" (render "Procfile" data)]
              ["static/index.html" (render "index.html" data)]
              ["project.clj" (render "project.clj" data)]
              ["src/{{sanitized}}/core.cljs" (render "core.cljs" data)]

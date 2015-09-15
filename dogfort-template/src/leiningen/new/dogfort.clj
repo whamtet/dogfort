@@ -9,7 +9,7 @@
   (let [data {:name name
               :sanitized (name-to-path name)}]
     (->files data
-             ["package.json" (render "package.json" data)]
+;             ["package.json" (render "package.json" data)] ;conflicting with lein npm
              ["Procfile" (render "Procfile" data)]
              ["static/index.html" (render "index.html" data)]
              ["project.clj" (render "project.clj" data)]

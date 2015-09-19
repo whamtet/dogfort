@@ -104,6 +104,7 @@
               :headers headers
               :websocket websocket
               :websocket? true
+              :request-method :get
               })))
 
 (defn run-http [handler options]

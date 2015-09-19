@@ -8,8 +8,8 @@
   (:require-macros
    [dogfort.middleware.defaults-macros :refer [wrap]]))
 
-(defn wrap-defaults [handler options]
-  (wrap (file/wrap-file handler "static")
+(defn wrap-defaults [handler static-folder options]
+  (wrap (file/wrap-file handler (:wrap-file options "static"))
         keyword-params/wrap-keyword-params
         params/wrap-params
         ;session/wrap-session

@@ -20,6 +20,6 @@
   (println "starting")
   (-> handler
       (defaults/wrap-defaults {:wrap-file "test-static"})
-      (run-http {:port 5000})))
+      (run-http {:port (or (.-PORT (.-env js/process)) 5000)})))
 
 (set! *main-cli-fn* main)

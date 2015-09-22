@@ -3,8 +3,6 @@
   #_(:import [org.joda.time DateTime Interval])
   (:require [dogfort.util.codec :as codec]
             [clojure.string :as str]
-            [dogfort.dev.nrepl :as nrepl]
-            #_[clj-time.format :refer [formatters unparse with-locale]]
             [redlobster.promise :as p])
   (:use-macros
    [redlobster.macros :only [promise waitp let-realised]]
@@ -135,7 +133,7 @@
               realise)
          #()))
 
-(defn wrap-cookies2 [handler]
+#_(defn wrap-cookies2 [handler]
   (fn [request]
     (let-realised
      [request (nrepl/my-eval `(cookies/cookies-request ~(dissoc request :body)))]

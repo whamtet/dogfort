@@ -81,7 +81,9 @@
            :character-encoding nil
            :ssl-client-cert (when peer-cert-fn (peer-cert-fn))
            :headers headers
-           :body req}
+           :body req
+           :response res
+           }
           result (handler ring-req)]
       (p/on-realised result
                      #(send-result res %)
@@ -93,6 +95,7 @@
         url (.parse url (.-url upgrade-req))
         uri (.-pathname url)
         query (.-search url)
+        query (if query (.substring query 1))
         headers (js->clj (.-headers upgrade-req))
         conn (.-connection upgrade-req)
         address (js->clj (.address conn))

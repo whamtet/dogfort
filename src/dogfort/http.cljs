@@ -15,12 +15,14 @@
   (-write-response [data res] "Write data to a http.ServerResponse"))
 
 (defn- send-result [res ring-result]
-  (let [{:keys [status headers body]} ring-result]
-    (set! (.-statusCode res) status)
-    (doseq [[header value] headers]
-      (.setHeader res (clj->js header) (clj->js value)))
-    (when (-write-response body res)
-      (.end res))))
+  (if-not (:keep-alive ring-result)
+    (if ring-result
+      (let [{:keys [status headers body]} ring-result]
+        (set! (.-statusCode res) status)
+        (doseq [[header value] headers]
+          (.setHeader res (clj->js header) (clj->js value)))
+        (when (-write-response body res)
+          (.end res))))))
 
 (defn- send-error-page [res status err]
   (response/default-response 500))
@@ -28,34 +30,34 @@
 (extend-protocol IHTTPResponseWriter
   string
   (-write-response [data res]
-    (.write res data)
-    true)
+                   (.write res data)
+                   true)
 
   PersistentVector
   (-write-response [data res]
-    (doseq [i data] (-write-response i res))
-    true)
+                   (doseq [i data] (-write-response i res))
+                   true)
 
   List
   (-write-response [data res]
-    (doseq [i data] (-write-response i res))
-    true)
+                   (doseq [i data] (-write-response i res))
+                   true)
 
   LazySeq
   (-write-response [data res]
-    (doseq [i data] (-write-response i res))
-    true)
+                   (doseq [i data] (-write-response i res))
+                   true)
 
   js/Buffer
   (-write-response [data res]
-    (.write res data)
-    true)
+                   (.write res data)
+                   true)
 
   Stream
   (-write-response [data res]
-    (e/on data :error #(send-error-page res 500 %))
-    (.pipe data res)
-    false))
+                   (e/on data :error #(send-error-page res 500 %))
+                   (.pipe data res)
+                   false))
 
 (defn- build-listener [handler options]
   (fn [req res]

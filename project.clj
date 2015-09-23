@@ -7,7 +7,7 @@
                  [org.bodil/redlobster "0.1.0"]
                  [org.clojure/clojurescript "1.7.48"]
                  [org.clojure/tools.nrepl "0.2.10"]
-                 [hiccups "0.1.1"]]
+                 [org.clojars.whamtet/hiccups "0.4.0-SNAPSHOT"]]
   :plugins [
             [lein-cljsbuild "1.1.0"]
             [org.bodil/lein-noderepl "0.1.11"]

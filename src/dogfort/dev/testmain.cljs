@@ -51,7 +51,7 @@
 (defn main [& args]
   (println "starting")
   (-> handler
-      (defaults/wrap-defaults {:wrap-file "static"})
+      (defaults/wrap-defaults {:wrap-file "static3/static2"})
       (run-http {:port 5000})))
 
 (test/run)

@@ -28,6 +28,10 @@
   (response/default-response 500))
 
 (extend-protocol IHTTPResponseWriter
+
+  nil
+  (-write-response [data res] true)
+
   string
   (-write-response [data res]
                    (.write res data)

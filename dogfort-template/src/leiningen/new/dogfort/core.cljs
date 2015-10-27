@@ -19,7 +19,7 @@
 (defn main [& args]
   (println "starting")
   (-> handler
-      (defaults/wrap-defaults {:wrap-file "test-static"})
+      (defaults/wrap-defaults {:wrap-file "static"})
       (run-http {:port (or (.-PORT (.-env js/process)) 5000)})))
 
 (set! *main-cli-fn* main)

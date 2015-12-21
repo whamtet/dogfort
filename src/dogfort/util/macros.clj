@@ -2,7 +2,8 @@
 
 (defmacro are [v body & rest]
   (let [
-        f `(fn ~v (if-not ~body (prn '~body ~v)))
+        [_ a b] body
+        f `(fn ~v (if-not ~body (prn ~v ~a ~b)))
         a (vec (take-nth 2 rest))
         b (vec (take-nth 2 (drop 1 rest)))
         ]
@@ -10,3 +11,8 @@
 
 (defmacro is [assert]
   `(if-not ~assert (prn '~assert)))
+
+(defmacro testing [msg & body]
+  `(do
+     (println "testing" ~msg)
+     ~@body))

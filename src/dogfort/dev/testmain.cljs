@@ -8,16 +8,15 @@
         [dogfort.middleware.file :only [wrap-file]]
         [dogfort.middleware.body-parser :only [wrap-body-parser]]
         [cljs.node :only [log]]
-
         )
   (:require [cljs.nodejs]
+            dogfort.middleware.nested-params-test
             [dogfort.middleware.defaults :as defaults]
             [redlobster.promise :as p]
             [redlobster.mongo :as mongo]
             [dogfort.middleware.routes]
             [dogfort.util.response :as response]
             [dogfort.dev.nrepl :as nrepl]
-            [dogfort.dev.test :as test]
             [hiccups.runtime]))
 
 (cljs.nodejs/enable-util-print!)

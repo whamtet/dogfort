@@ -118,7 +118,7 @@
 
 (defn run-http [handler options]
   (let [server (.createServer http (build-listener handler options))
-        wss (ws.Server. (clj->js {:server server}))
+        wss (ws.Server. #js{:server server})
         ]
     (.on wss "connection" #(ws-handler handler %))
     (.listen server (:port options))))

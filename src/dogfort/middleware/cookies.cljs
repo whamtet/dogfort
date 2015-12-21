@@ -8,9 +8,6 @@
    [redlobster.macros :only [promise waitp let-realised]]
    ))
 
-(defn print-through [s]
-  (prn s) s)
-
 (def ^{:doc "HTTP token: 1*<any CHAR except CTLs or tspecials>. See RFC2068"
        :added "1.3"}
   re-token

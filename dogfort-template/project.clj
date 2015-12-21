@@ -1,4 +1,4 @@
-(defproject dogfort/lein-template "0.6.7"
+(defproject dogfort/lein-template "0.6.8"
   :description "A minimal ClojureScript project template"
   :url "https://github.com/whamtet/dogfort"
   :license {:name "Eclipse Public License"

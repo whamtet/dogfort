@@ -22,7 +22,7 @@
    :cookie-attrs (merge {:path "/"
                          :http-only true}
                         (:cookie-attrs options)
-                        (if-let [root (options :root)]
+                        (if-let [root (:root options)]
                           {:path root}))})
 
 (defn- bare-session-request

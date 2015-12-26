@@ -4,7 +4,7 @@
   :license {:name "Apache License, version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0.html"}
   :dependencies [[org.clojure/clojure "1.7.0"]
-                 [org.bodil/redlobster "0.1.0"]
+                 [org.bodil/redlobster "0.2.1"]
                  [org.clojure/clojurescript "1.7.48"]
                  [org.clojure/tools.nrepl "0.2.10"]
                  [org.clojars.whamtet/hiccups "0.4.0-SNAPSHOT"]]

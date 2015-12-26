@@ -1,7 +1,7 @@
 (ns dogfort.middleware.file
   (:require-macros [cljs.node-macros :as n])
-  (:use-macros [redlobster.macros :only [promise waitp]])
-  (:require [redlobster.stream :as stream]
+  (:use-macros [redlobster.macros :only [promise waitp let-realised]])
+  (:require [redlobster.io :as io]
             [redlobster.promise :as p]
             [dogfort.util.codec :as codec]
             [dogfort.util.mime-type :as mime]
@@ -24,8 +24,8 @@
      (.stat fs file
             (fn [err stats]
               (if err (realise-error err)
-                  (do (aset stats "path" file)
-                      (realise stats)))))
+                (do (aset stats "path" file)
+                  (realise stats)))))
      (realise-error nil))))
 
 (defn- etag [stats]
@@ -38,17 +38,18 @@
 
 (defn- expand-dir [^string path]
   (try
-   (.realpathSync fs path)
-   (catch :default e (throw (str "Directory does not exist: " path)))))
+    (.realpathSync fs path)
+    (catch :default e (throw (str "Directory does not exist: " path)))))
 
 (defn- file-response [stats]
   (let [file (.-path stats)]
-    {:status 200
-     :headers {:content-type (mime/ext-mime-type file)
-               :content-length (.-size stats)
-               :last-modified (last-modified stats)
-               :etag (etag stats)}
-     :body (stream/slurp file)}))
+    (let-realised [s (io/slurp file)]
+                  {:status 200
+                   :headers {:content-type (mime/ext-mime-type file)
+                             :content-length (.-size stats)
+                             :last-modified (last-modified stats)
+                             :etag (etag stats)}
+                   :body @s})))
 
 (defn wrap-file [app ^string root-path & [opts]]
   (let [opts (merge {:root (expand-dir root-path)

@@ -53,6 +53,4 @@
       (defaults/wrap-defaults)
       (run-http {:port 5000})))
 
-(test/run)
-
 (set! *main-cli-fn* main)

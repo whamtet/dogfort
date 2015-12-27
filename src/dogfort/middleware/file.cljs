@@ -43,7 +43,7 @@
 
 (defn- file-response [stats]
   (let [file (.-path stats)]
-    (let-realised [s (io/slurp file)]
+    (let-realised [s (io/binary-slurp file)]
                   {:status 200
                    :headers {:content-type (mime/ext-mime-type file)
                              :content-length (.-size stats)

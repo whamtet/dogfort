@@ -3,7 +3,7 @@
 (ns dogfort.middleware.routes-macros)
 
 (def ^:private +splat+ #"\*")
-(def ^:private +literal+ #"/\w*")
+(def ^:private +literal+ #"/[\w-]*")
 (def ^:private +keyword+  #"/:[\w\-]+")
 (def ^:private +params+ #"\?.*")
 

@@ -15,14 +15,15 @@
   (-write-response [data res] "Write data to a http.ServerResponse"))
 
 (defn- send-result [res ring-result]
+  (println "Sending")
   (if-not (:keep-alive ring-result)
     (if ring-result
-      (let [{:keys [status headers body]} ring-result]
+      (let [{:keys [status headers body end-stream?]} ring-result]
         (set! (.-statusCode res) status)
         (doseq [[header value] headers]
           (.setHeader res (clj->js header) (clj->js value)))
-        (when (-write-response body res)
-          (.end res))))))
+        (when (or (-write-response body res) end-stream?)
+          (.end body))))))
 
 (defn- send-error-page [res status err]
   (response/default-response 500))
@@ -59,6 +60,7 @@
 
   Stream
   (-write-response [data res]
+                   (println "streaming")
                    (e/on data :error #(send-error-page res 500 %))
                    (.pipe data res)
                    false))

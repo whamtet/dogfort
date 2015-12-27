@@ -15,7 +15,6 @@
   (-write-response [data res] "Write data to a http.ServerResponse"))
 
 (defn- send-result [res ring-result]
-  (println "Sending")
   (if-not (:keep-alive ring-result)
     (if ring-result
       (let [{:keys [status headers body end-stream?]} ring-result]
@@ -60,7 +59,6 @@
 
   Stream
   (-write-response [data res]
-                   (println "streaming")
                    (e/on data :error #(send-error-page res 500 %))
                    (.pipe data res)
                    false))

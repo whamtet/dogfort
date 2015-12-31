@@ -21,10 +21,13 @@
         (set! (.-statusCode res) status)
         (doseq [[header value] headers]
           (.setHeader res (clj->js header) (clj->js value)))
-        (when (or (-write-response body res) end-stream?)
+        (when (-write-response body res)
+          (.end res))
+        (when (and (s/stream? body) end-stream?)
           (.end body))))))
 
 (defn- send-error-page [res status err]
+  (println "error page")
   (response/default-response 500))
 
 (extend-protocol IHTTPResponseWriter

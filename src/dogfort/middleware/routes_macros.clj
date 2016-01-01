@@ -1,29 +1,13 @@
-; Much code from Compojure and Snout here
+; Not so much code from Compojure and Snout here
 
 (ns dogfort.middleware.routes-macros)
 
-(def ^:private +splat+ #"\*")
-(def ^:private +literal+ #"/[\w-]*")
-(def ^:private +keyword+  #"/:[\w\-]+")
-(def ^:private +params+ #"\?.*")
-
-(defn- lex1 [route]
-  (if-let [x (and (.startsWith route "/:") (re-find +keyword+ route))]
-    [(keyword (.substring x 2)) (.substring route (count x))]
-    (if-let [x (re-find +splat+ route)]
-      ["*" nil]
-      (if-let [x (re-find +literal+ route)]
-        [x (.substring route (count x))]
-        (if-let [x (re-find +params+ route)]
-          ["?" (.substring x 1)])))))
-
 (defn- make-matcher [route]
-  (loop [[type route] (lex1 route)
-         matcher []]
-    (if (nil? type)
-      matcher
-      (recur (lex1 route)
-             (conj matcher type)))))
+  (cond
+   (= route "/") [""]
+   (.contains route "/")
+   (vec (rest (.split route "/")))
+   :default route))
 
 (defn- assoc-&-binding [binds req sym]
   (assoc binds sym `(dissoc (:params ~req)

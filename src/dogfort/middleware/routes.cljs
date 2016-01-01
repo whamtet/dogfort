@@ -1,7 +1,7 @@
 ; From https://github.com/eduardoejp/snout/blob/master/src/snout/core.cljs
 
 (ns dogfort.middleware.routes
-  (:use-macros [dogfort.middleware.routes-macros :only [compile-route]]
+  (:use-macros [dogfort.middleware.routes-macros :only [compile-route ANY]]
                [redlobster.macros :only [promise]])
   (:use [cljs.node :only [log]])
   (:require [redlobster.promise :as p]
@@ -10,20 +10,24 @@
 
 (defn- route-match
   "Matches the URL to the matcher and (if they coincide) returns a set of
-route bindings."
+  route bindings."
   [url matcher]
-  (loop [[m & matcher] matcher
-         url url
-         res {}]
-    (if (empty? url)
-      (if (empty? matcher) res)
-      (if (= "*" m)
-        (assoc res :* url)
-        (let [r (.substring (re-find #"/[^/]*" url) 1)
-              url (.substring url (inc (count r)))]
-          (cond
-           (keyword? m) (recur matcher url (assoc res m (codec/url-decode r)))
-           (= m (str "/" r)) (recur matcher url res)))))))
+  (let [
+        url (rest (.split url "/"))
+        ]
+    (loop [[m & matcher] matcher
+           [u & url] url
+           res {}]
+      (cond
+       (not (or m u)) res
+       (not (and m u)) nil
+       (= "*" m) (assoc res :* (apply str (interpose "/" (list* u url))))
+       (.startsWith m ":")
+       (recur matcher url (assoc res
+                            (keyword (.substring m 1))
+                            (codec/url-decode u)))
+       (= m u)
+       (recur matcher url res)))))
 
 (defn- merge-params [request params]
   (assoc request :params (merge (:params request {}) params)))
@@ -34,11 +38,14 @@ route bindings."
       (handler (merge-params request matches)))))
 
 (defn routing [request & handlers]
-  (let [response (or (some #(% request) handlers)
-                     (p/promise (response/default-response 404)))]
+  (let [response (some #(% request) handlers)]
     (cond (p/promise? response) response
           (map? response) (p/promise response)
-          :else (p/promise (response/response 200 response)))))
+          response (p/promise (response/response 200 response)))))
 
 (defn routes [& handlers]
   #(apply routing % handlers))
+
+(def not-found
+  (ANY "*" []
+       (response/default-response 404)))

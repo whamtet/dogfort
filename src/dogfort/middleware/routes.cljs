@@ -6,7 +6,8 @@
   (:use [cljs.node :only [log]])
   (:require [redlobster.promise :as p]
             [dogfort.util.response :as response]
-            [dogfort.util.codec :as codec]))
+            [dogfort.util.codec :as codec]
+            ))
 
 (defn- route-match
   "Matches the URL to the matcher and (if they coincide) returns a set of

@@ -16,3 +16,6 @@
   `(do
      (println "testing" ~msg)
      ~@body))
+
+(defmacro symzip [& syms]
+  `(zipmap ~(mapv name syms) ~(vec syms)))

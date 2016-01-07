@@ -5,6 +5,8 @@
    [dogfort.middleware.keyword-params :as keyword-params]
    [dogfort.middleware.session :as session]
    [dogfort.middleware.cookies :as cookies]
+   [dogfort.middleware.edn :as edn]
+   [dogfort.middleware.multipart-params :as multipart-params]
    )
   (:require-macros
    [dogfort.middleware.defaults-macros :refer [wrap]]))
@@ -15,5 +17,6 @@
         cookies/wrap-cookies
         keyword-params/wrap-keyword-params
         params/wrap-params
-        ;session/wrap-session
+        edn/wrap-edn-params
+        multipart-params/wrap-multipart-params
         ))

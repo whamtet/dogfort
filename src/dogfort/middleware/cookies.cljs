@@ -5,7 +5,7 @@
             [clojure.string :as str]
             [redlobster.promise :as p])
   (:use-macros
-   [redlobster.macros :only [promise waitp let-realised]]
+   [redlobster.macros :only [promise let-realised]]
    ))
 
 (def ^{:doc "HTTP token: 1*<any CHAR except CTLs or tspecials>. See RFC2068"
@@ -123,12 +123,8 @@
   {:arglists '([response] [response options])
    :added "1.2"}
   [response & [{:keys [encoder] :or {encoder codec/form-encode}}]]
-  (waitp response
-         #(-> %
-              (set-cookies encoder)
-              (dissoc :cookies)
-              realise)
-         #()))
+  (let-realised [response response]
+                (-> @response (set-cookies encoder) (dissoc :cookies))))
 
 #_(defn wrap-cookies2 [handler]
   (fn [request]

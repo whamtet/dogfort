@@ -70,12 +70,9 @@
   {:arglists '([response request] [response request options])
    :added "1.2"}
   [response request & [options]]
-  (if response
-    (-> (waitp
-         response
-         #(realise (bare-session-response % request options))
-         #())
-        cookies/cookies-response)))
+  (let-realised
+   [response response]
+   (bare-session-response @response request options)))
 
 (defn wrap-session
   "Reads in the current HTTP session map, and adds it to the :session key on

@@ -27,8 +27,7 @@
           (.end body))))))
 
 (defn- send-error-page [res status err]
-  (println "error page")
-  (response/default-response 500))
+  (send-result res (response/default-response 500)))
 
 (extend-protocol IHTTPResponseWriter
 

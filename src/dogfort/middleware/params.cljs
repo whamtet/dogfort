@@ -3,6 +3,7 @@
   body."
   (:require [dogfort.util.codec :as codec]
             [dogfort.util.request :as req]
+            [redlobster.stream :as stream]
             [redlobster.promise :as p])
   (:use-macros [redlobster.macros :only [promise let-realised]]))
 
@@ -20,19 +21,21 @@
                   {:query-params params, :params params})
                 {:query-params {}, :params {}})))
 
-(defn slurp [body]
+#_(defn slurp [body]
+  (println "slurping")
   (promise
    (let [sb (js/Array.)]
      (.on body "data" #(.push sb %))
      (.on body "end" #(realise (.join sb ""))))))
 
-(defn assoc-form-params
+#_(defn assoc-form-params
   "Parse and assoc parameters from the request body with the request."
   {:added "1.2"}
   [handler request encoding]
   (if-let [body (and (req/urlencoded-form? request) (:body request))]
     (let-realised
      [body (slurp body)]
+     (println "slurped")
      (let [params (parse-params @body encoding)
            request (merge-with merge request {:form-params params, :params params})]
        (let-realised [response (handler request)]
@@ -56,9 +59,7 @@
                   request
                   (assoc-query-params request encoding))
         ]
-    (if (:form-params request)
-      (handler request)
-      (assoc-form-params handler request encoding))))
+    (handler request)))
 
 (defn wrap-params
   "Middleware to parse urlencoded parameters from the query string and form

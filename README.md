@@ -37,7 +37,7 @@ for documentation on promises.
 ```clojure
     (ns user
       (:use [dogfort.http :only [run-http]])
-      (:require [redlobster.promise :as p])
+      (:require [redlobster.promise :as p]))
 
     (defn handler [request]
       (p/promise {:status 200

@@ -1,4 +1,4 @@
-(defproject dogfort "0.2.0-SNAPSHOT"
+(defproject dogfort "0.2.1"
   :description "A web server framework for Clojurescript on Node"
   :url "https://github.com/bodil/dogfort"
   :license {:name "Apache License, version 2.0"

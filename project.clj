@@ -1,13 +1,13 @@
-(defproject dogfort "0.2.2-SNAPSHOT"
+(defproject dogfort "0.2.3"
   :description "A web server framework for Clojurescript on Node"
   :url "https://github.com/bodil/dogfort"
   :license {:name "Apache License, version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0.html"}
   :dependencies [[org.clojure/clojure "1.7.0"]
-                 [redlobster "0.2.2"]
+                 [redlobster "0.2.3"]
                  [org.clojure/clojurescript "1.7.48"]
                  [org.clojure/tools.nrepl "0.2.10"]
-                 [org.clojars.whamtet/hiccups "0.4.0-SNAPSHOT"]]
+                 [org.clojars.whamtet/hiccups "0.4.1"]]
   :plugins [
             [lein-cljsbuild "1.1.0"]
             [org.bodil/lein-noderepl "0.1.11"]
